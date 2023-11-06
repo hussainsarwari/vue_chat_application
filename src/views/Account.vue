@@ -1,15 +1,13 @@
 <template>
-  <router-link to="/"><Button class="btn-back">Back</Button></router-link>
+  <router-link to="/Mainpage"><Button class="btn-back">Back</Button></router-link>
   <div class="container">
     <div class="profile_img_and_details">
-      <h2 class="username">Mohammad</h2>
+      <h2 class="username">{{ data.user_name }}</h2>
       <i class="fa-solid fa-user"></i>
       <h5 class="state">online</h5>
       <img src="../assets/img/img5.jpg" alt="userImg" />
-      <span class="user_details">join date: 2/1/2018</span>
       <hr />
-      <h3 class="a">Friends:100</h3>
-      <button class="user_details btn btn-message">Send message</button>
+      <h3 class="a">Friends: <span>5</span></h3>
     </div>
     <div class="details">
       <!-- section1 = personal information -->
@@ -18,14 +16,15 @@
             <span>information</span></h1>
         <div class="info">
           <div class="user_personal_info">
-            <h4>First name: <span id="first_name">Mohammad</span></h4>
-            <h4>Last name: <span id="last_name">Sarwari</span></h4>
+            <h4>Username: <span id="first_name">{{ data.user_name }}</span></h4>
+            <h4>name: <span id="last_name">{{ data.name }}</span></h4>
+          
             <address>
               <span>Address:</span>
-              3th street, Kaul, Afghanistan
+             {{ data.user_address }}
             </address>
-            <h4>Email: <span id="email">mohammad123@gmail.com</span></h4>
-            <h4>Phone Number: <span id="phone_number">+937652812123</span></h4>
+            <h4>Email: <span id="email">{{ data.email }}</span></h4>
+            <h4>Phone Number: <span id="phone_number">{{ data.phone }}</span></h4>
           </div>
 
           <!-- user social media -->
@@ -46,7 +45,7 @@
                 />
               </svg>
 
-              mohammad123
+             {{ data.facebook }}
             </h4>
             <h4 class="linkedin">
               <svg
@@ -63,8 +62,7 @@
                   fill="black"
                 />
               </svg>
-
-              mohammad23
+              {{ data.linkedln }}
             </h4>
             <h4 class="instagram">
               <svg
@@ -81,8 +79,7 @@
                   fill="black"
                 />
               </svg>
-
-              mohammad3
+              {{ data.instagram }}
             </h4>
             <h4 class="whatsapp">
               <svg
@@ -99,8 +96,7 @@
                   fill="black"
                 />
               </svg>
-
-              +93766239812
+              {{ data.whatsapp }}
             </h4>
             <h4 class="skype">
               <svg
@@ -117,8 +113,7 @@
                   fill="black"
                 />
               </svg>
-
-              +93766239812
+              {{ data.skype }}
             </h4>
           </div>
         </div>
@@ -134,47 +129,33 @@
           Send friend request
         </button>
         <div class="about_user" v-if="toggle">
-          <h2>Country: <span id="country"> Afghanistan </span></h2>
-          <h2>Gender: <span id="gender">Male</span></h2>
-
-          <h2>Education: <span id="education">computer science</span></h2>
-          <h2>Date of birth: <span id="birth">20/2/2000</span></h2>
+          <h2>Country: <span id="country"> {{ data.country }} </span></h2>
+          <h2>Gender: <span id="gender">{{ data.gender }}</span></h2>
+          <h2>father name: <span id="last_name">{{ data.father_name }}</span></h2>
+          <h2>Education: <span id="education">{{ data.education }}</span></h2>
+          <h2>Date of birth: <span id="birth">{{ data.birth }}</span></h2>
           <h2>
-            Favorites:
-            <span id="favorites">
-              <ul>
-                <li>sport</li>
-                <li>game</li>
-                <li>book</li>
-              </ul>
-            </span>
+          
           </h2>
         </div>
 
         <div class="friends" v-if="!toggle">
 
-<ul>
-    <li>
-                        <span id="profile"><img src="../assets/img/img1.jpg" alt="profile"></span>
-                        <span id="username">Mohammadi</span>
-                       
-                    </li>
-                    <li>
-                        <span id="profile"><img src="../assets/img/img2.jpg" alt="profile"></span>
-                        <span id="username">teacher</span>
-                       
-                    </li>
-                    <li>
-                        <span id="profile"><img src="../assets/img/img3.jpg" alt="profile"></span>
-                        <span id="username">Mohammad</span>
-                      
-                    </li>
-                    <li>
-                        <span id="profile"><img src="../assets/img/img4.jpg" alt="profile"></span>
-                        <span id="username">Mohammad</span>
-                       
-                    </li>
-</ul>
+          
+          <ul>
+          <li v-for="e in this.friends" :key="this.user_id">
+            <span id="profile"
+              ><img src="../assets/img/img1.jpg" alt="profile"
+            /></span>
+      
+                
+        <router-link  to="/Account"  @click="this.$store.state.anotheruserid=e.user_id" style="cursor: pointer; all: unset;"><span style="color: #333;" id="username">{{ e.user_name }}</span></router-link>
+       
+            
+     
+            <span id="state">online</span>
+          </li>
+        </ul>
 
 
         </div>
@@ -184,14 +165,93 @@
 </template>
 
 <script>
+import axios from 'axios'
 export default {
 
 
     data() {
         return {
-            toggle:true
+            toggle:true,
+            data:[],
+            friends_id:[],
+            friends:[]
+
+
         }
     },
+
+    mounted(){
+      this.get_friends_id()
+      this.get_data()
+      this.get_friends()
+    },
+methods: {
+  
+  get_friends_id() {
+      axios
+        .get("http://localhost:801/Vue_chat_appliction/src/php/friends.php", {})
+        .then((Response) => {
+          for (let i = 0; i < Response.data.length; i++) {
+            if (Response.data[i].user_id == this.$store.state.anotheruserid) {
+              this.friends_id.push(Response.data[i].friends_id);
+            }
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+      // console.log('friends id :',this.friends_id);
+    },
+
+    get_friends() {
+      axios
+        .get("http://localhost:801/Vue_chat_appliction/src/php/index.php")
+        .then((Response) => {
+          let b = Object.entries(Response.data);
+          for (let i = 0; i < this.friends_id.length; i++) {
+            for (let x = 0; x < b.length; x++) {
+              // debugger
+              if (this.friends_id[i] == b[x][1].user_id) {
+
+                this.friends.push(b[x][1]);
+              }
+            }
+          }
+          console.log("friends:",this.friends);
+          // this.allUsers = Response.data;
+          // console.log(this.allUsers);
+          //  console.log(b[3][1].user_id);
+          //  console.log(typeof(b));
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    },
+
+  get_data() {
+  
+      axios
+        .get("http://localhost:801/Vue_chat_appliction/src/php/index.php",{
+        })
+        .then((Response) => {
+        for (let i = 0; i <Response.data.length; i++) {
+        if(Response.data[i].user_id==this.$store.state.anotheruserid){
+          this.data=Response.data[i];
+        
+        }
+          
+        }
+           console.log(Response.data);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    },
+
+},
+
+
+
 };
 </script>
 
@@ -276,6 +336,10 @@ svg path{
   background: #2196f3;
   border-radius: 1em;
   margin: 0.3em 0;
+}
+.user_personal_info{
+    top: -2em;
+    position: relative;
 }
 .user_personal_info > h4,
 address {
